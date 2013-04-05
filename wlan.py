@@ -1,27 +1,42 @@
 #!/usr/bin/env python
 import requests
+import BeautifulSoup as bs
 
 def main(args):
     url = 'http://' + args.url
-    
+    status = False
+
     if args.login:
         user, password = args.login.split(':')
         login = {'ACTION_POST': 'LOGIN', 'FILECODE': '', 'LOGIN_PASSWD': password, 'LOGIN_USER': user, 'VERIFICATION_CODE': '', 'VER_CODE': '', 'login': 'Log In '}
         r = requests.post(url + '/login.php', data=login)
         print 'Login:', r
+        status = True
 
     if args.on:
         r = requests.post(url + '/bsc_wlan.php', data=_ENABLE)
         print 'Enable:', r
+        status = True
         
     if args.off:
         r = requests.post(url + '/bsc_wlan.php', data=_DISABLE)
         print 'Disable:', r
+        status = True
     
     if args.on or args.off:
         r = requests.get(url + '/bsc_wlan.xgi?exeshell=submit%20COMMIT&exeshell=submit%20WLAN') # Wierd commit request (as shown by Wireshark)
         print 'Save:', r
     
+    if status:
+        r = requests.get(url + '/st_device.php')
+        s = bs.BeautifulSoup(r.content, convertEntities=bs.BeautifulSoup.HTML_ENTITIES)
+        div = s.findAll('div')[-2]
+        rows = div.table.findAll('tr')
+        stringify = lambda x: x.getString()
+        for r in rows:
+            name, val = r.findAll('td')
+            print stringify(name), stringify(val)
+
 _ENABLE = { 'ACTION_POST': 'final',
  'f_ap_hidden': '0',
  'f_authentication': '0',
@@ -79,3 +94,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
     main(args)
     
+
