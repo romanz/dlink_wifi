@@ -30,12 +30,13 @@ def main(args):
     if status:
         r = requests.get(url + '/st_device.php')
         s = bs.BeautifulSoup(r.content, convertEntities=bs.BeautifulSoup.HTML_ENTITIES)
-        div = s.findAll('div')[-2]
-        rows = div.table.findAll('tr')
-        stringify = lambda x: x.getString()
-        for r in rows:
-            name, val = r.findAll('td')
-            print stringify(name), stringify(val)
+        for index in [-7, -2]:
+            div = s.findAll('div')[index]
+            rows = div.table.findAll('tr')
+            stringify = lambda x: x.text
+            for r in rows:
+                name, val = r.findAll('td')
+                print stringify(name), stringify(val)
 
 _ENABLE = { 'ACTION_POST': 'final',
  'f_ap_hidden': '0',
