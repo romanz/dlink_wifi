@@ -2,6 +2,9 @@
 import requests
 import BeautifulSoup as bs
 
+def stringify(x):
+    return x.text.encode('utf-8')
+
 def main(args):
     url = 'http://' + args.url
     status = False
@@ -30,10 +33,10 @@ def main(args):
     if status:
         r = requests.get(url + '/st_device.php')
         s = bs.BeautifulSoup(r.content, convertEntities=bs.BeautifulSoup.HTML_ENTITIES)
+        divs = s.findAll('div')
         for index in [-7, -2]:
-            div = s.findAll('div')[index]
+            div = divs[index]
             rows = div.table.findAll('tr')
-            stringify = lambda x: x.text
             for r in rows:
                 name, val = r.findAll('td')
                 print stringify(name), stringify(val)
